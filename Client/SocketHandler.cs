@@ -12,7 +12,6 @@ public class DataObject
     public string Room;
     public string Username;
     public string Message;
-    public bool History;
 }
 
 public class SocketHandler
@@ -48,10 +47,7 @@ public class SocketHandler
 
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
-                if(data.History)
-                    await RelayModel.Instance.DumpHistory(this);
-                else
-                    await RelayModel.Instance.PropogateMessage(raw);
+                await RelayModel.Instance.PropogateMessage(raw);
 
                 Console.WriteLine(raw);
             }

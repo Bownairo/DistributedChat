@@ -53,11 +53,6 @@ public sealed class RelayModel
         }
     }
 
-    public async Task DumpHistory(SocketHandler socket)
-    {
-        await socket.ServerSend("{ \"Room\" : \"\" , \"Username\" : \"\" , \"Message\" : \"\" , \"History\" : true }");
-    }
-
     public async Task PropogateMessage(string json)
     {
         Console.WriteLine("Received message");
