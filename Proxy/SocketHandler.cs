@@ -48,13 +48,14 @@ public class SocketHandler
 
                 if(result.MessageType == WebSocketMessageType.Close)
                 {
-                    //Do closure stuff here
+                    //Socket closed
                     break;
                 }
 
                 //Decoding here
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
-                var data = JsonConvert.DeserializeObject<DataObject>(raw);
+                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+                var data = JsonConvert.DeserializeObject<DataObject>(raw, settings);
 
                 switch (data.Type)
                 {
@@ -65,10 +66,11 @@ public class SocketHandler
                         ProxyModel.Instance.UpdateServer(data.address, data.numUsers);
                         break;
                     case Types.Client:
+                        //probably encrypt here too
                         var server = ProxyModel.Instance.SelectServer();
                         await ProxyDirect(server);
-                        //Kill connection
-                        break;
+                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
+                        return;
                     default:
                         break;
                 }

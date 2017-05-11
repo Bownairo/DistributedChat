@@ -9,12 +9,12 @@ using Newtonsoft.Json;
 public class Server
 {
     private string location;
-    private int numUsers;
+    public int NumUsers {get; set;}
 
     public Server (string location)
     {
         this.location = location;
-        numUsers = 0;
+        NumUsers = 0;
     }
 }
 
@@ -56,13 +56,18 @@ public sealed class ProxyModel
         }
     }
 
-    public void UpdateServer(string server, int numUsers)
+    public void UpdateServer(string name, int numUsers)
     {
-        //Update numUsers and lookup server method.
+        GetByName(name).NumUsers = numUsers;
     }
 
     public string SelectServer()
     {
         return "ahhh";
+    }
+
+    private Server GetByName(string name)
+    {
+        return null;
     }
 }
