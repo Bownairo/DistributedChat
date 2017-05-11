@@ -6,6 +6,18 @@ using System.Net.WebSockets;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
+public class Server
+{
+    private string location;
+    private int numUsers;
+
+    public Server (string location)
+    {
+        this.location = location;
+        numUsers = 0;
+    }
+}
+
 public sealed class ProxyModel
 {
     private static volatile ProxyModel instance;
@@ -14,7 +26,7 @@ public sealed class ProxyModel
 
     private ProxyModel()
     {
-        servers = new List<SocketHandler>();
+        servers = new List<Server>();
     }
 
     public static ProxyModel Instance
@@ -33,30 +45,19 @@ public sealed class ProxyModel
         }
     }
 
-    private List<SocketHandler> servers;
+    private List<Server> servers;
 
-    public void Addserver(SocketHandler socket)
+    public void AddServer(string location)
     {
         Console.WriteLine("Adding server");
         lock(serverLock)
         {
-            servers.Add(socket);
+            servers.Add(new Server(location));
         }
     }
 
-    public void Removeserver(SocketHandler socket)
+    public void UpdateServer(string server)
     {
-        Console.WriteLine("Removing server");
-        lock(serverLock)
-        {
-            clients.Remove(socket);
-        }
-    }
-
-    public async Task PropogateMessage(string json)
-    {
-        Console.WriteLine("Received message");
-        foreach(var s in servers)
-            await s.ServerSend(json);
+        //Update numUsers of server here.
     }
 }

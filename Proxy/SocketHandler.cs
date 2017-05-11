@@ -7,11 +7,11 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-public class DataObject
+public enum Types {New, Update, Client};
+
+public class DataObject //Use this as secure communication format
 {
-    public string Room;
-    public string Username;
-    public string Message;
+    public Types type;
 }
 
 public class SocketHandler
@@ -25,7 +25,7 @@ public class SocketHandler
         this.socket = socket;
     }
 
-    private async Task ServerReceive()
+    private async Task ProxyReceive()
     {
         var buffer = new byte[BufferSize];
         var seg = new ArraySegment<byte>(buffer);
@@ -33,7 +33,7 @@ public class SocketHandler
         while(true)
         {
             if (socket.State != WebSocketState.Open)
-                break;
+                break;	//Socket no longer open, should only get here from error
 
             try
             {
@@ -41,25 +41,28 @@ public class SocketHandler
 
                 if(result.MessageType == WebSocketMessageType.Close)
                 {
-                    ProxyModel.Instance.RemoveClient(this);
+                    //Do closure stuff here
                     break;
                 }
 
+                //Decoding here
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
-                await ProxyModel.Instance.PropogateMessage(raw);
+
+                //If new server connection add to list of servers
+                //If count update count
+                //If client point at server
 
                 Console.WriteLine(raw);
             }
             catch
             {
-                //If socket fails, print secret illuminati god key
-                System.Console.WriteLine("098f6bcd4621d373cade4e832627b4f6");
+                System.Console.WriteLine("Error"); //Socket recieving failed
             }
         }
     }
 
-    public async Task ServerSend(string message)
+    public async Task ProxyDirect(string message) //Use this only to direct a user towards a server
     {
         if(socket.State != WebSocketState.Open)
             return;
@@ -73,8 +76,7 @@ public class SocketHandler
         }
         catch
         {
-            //If sending fails, print secret illuminati god key
-            System.Console.WriteLine("098f6bcd4621d373cade4e832627b4f6");
+            System.Console.WriteLine("Error");
         }
     }
 
@@ -87,13 +89,11 @@ public class SocketHandler
         {
             var socket = await hc.WebSockets.AcceptWebSocketAsync();
             var h = new SocketHandler(socket);
-            ProxyModel.Instance.AddClient(h);
-            await h.ServerReceive();
+            await h.ProxyReceive();
         }
         catch
         {
-            //If sending fails, print secret illuminati god key
-            System.Console.WriteLine("098f6bcd4621d373cade4e832627b4f6");
+            System.Console.WriteLine("Error");
         }
     }
 
