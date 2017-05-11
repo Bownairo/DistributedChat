@@ -12,6 +12,8 @@ public enum Types {New, Update, Client};
 public class DataObject //Use this as secure communication format
 {
     public Types Type;
+    public string address;
+    public int numUsers;
 }
 
 public class Direction //use this to send a direction to a user.
@@ -57,13 +59,15 @@ public class SocketHandler
                 switch (data.Type)
                 {
                     case Types.New:
-                        ProxyModel.Instance.AddServer("ahh");
+                        ProxyModel.Instance.AddServer(data.address);
                         break;
                     case Types.Update:
-                        ProxyModel.Instance.UpdateServer("ahhh");
+                        ProxyModel.Instance.UpdateServer(data.address, data.numUsers);
                         break;
-                    case Types.Client: //connect to selected server
-                        ProxyModel.Instance.SelectServer();
+                    case Types.Client:
+                        var server = ProxyModel.Instance.SelectServer();
+                        await ProxyDirect(server);
+                        //Kill connection
                         break;
                     default:
                         break;

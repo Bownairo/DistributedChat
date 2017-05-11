@@ -56,9 +56,9 @@ public sealed class ProxyModel
         }
     }
 
-    public void UpdateServer(string server)
+    public void UpdateServer(string server, int numUsers)
     {
-        //Update numUsers of server here.
+        //Update numUsers and lookup server method.
     }
 
     public string SelectServer()
