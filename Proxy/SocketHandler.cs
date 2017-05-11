@@ -41,13 +41,13 @@ public class SocketHandler
 
                 if(result.MessageType == WebSocketMessageType.Close)
                 {
-                    RelayModel.Instance.RemoveClient(this);
+                    ProxyModel.Instance.RemoveClient(this);
                     break;
                 }
 
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
-                await RelayModel.Instance.PropogateMessage(raw);
+                await ProxyModel.Instance.PropogateMessage(raw);
 
                 Console.WriteLine(raw);
             }
@@ -87,7 +87,7 @@ public class SocketHandler
         {
             var socket = await hc.WebSockets.AcceptWebSocketAsync();
             var h = new SocketHandler(socket);
-            RelayModel.Instance.AddClient(h);
+            ProxyModel.Instance.AddClient(h);
             await h.ServerReceive();
         }
         catch

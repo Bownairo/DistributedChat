@@ -6,18 +6,18 @@ using System.Net.WebSockets;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-public sealed class RelayModel
+public sealed class ProxyModel
 {
-    private static volatile RelayModel instance;
+    private static volatile ProxyModel instance;
     private static object syncRoot = new Object();
-    private static object clientLock = new Object();
+    private static object serverLock = new Object();
 
-    private RelayModel()
+    private ProxyModel()
     {
-        clients = new List<SocketHandler>();
+        servers = new List<SocketHandler>();
     }
 
-    public static RelayModel Instance
+    public static ProxyModel Instance
     {
         get
         {
@@ -26,28 +26,28 @@ public sealed class RelayModel
                 lock (syncRoot)
                 {
                     if(instance == null)
-                        instance = new RelayModel();
+                        instance = new ProxyModel();
                 }
             }
             return instance;
         }
     }
 
-    private List<SocketHandler> clients;
+    private List<SocketHandler> servers;
 
-    public void AddClient(SocketHandler socket)
+    public void Addserver(SocketHandler socket)
     {
-        Console.WriteLine("Adding client");
-        lock(clientLock)
+        Console.WriteLine("Adding server");
+        lock(serverLock)
         {
-            clients.Add(socket);
+            servers.Add(socket);
         }
     }
 
-    public void RemoveClient(SocketHandler socket)
+    public void Removeserver(SocketHandler socket)
     {
-        Console.WriteLine("Removing client");
-        lock(clientLock)
+        Console.WriteLine("Removing server");
+        lock(serverLock)
         {
             clients.Remove(socket);
         }
@@ -56,7 +56,7 @@ public sealed class RelayModel
     public async Task PropogateMessage(string json)
     {
         Console.WriteLine("Received message");
-        foreach(var s in clients)
+        foreach(var s in servers)
             await s.ServerSend(json);
     }
 }
