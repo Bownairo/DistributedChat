@@ -45,7 +45,7 @@ public class SocketHandler
                     RelayModel.Instance.RemoveClient(this);
                     break;
                 }
-                
+
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
                 if(data.History)
