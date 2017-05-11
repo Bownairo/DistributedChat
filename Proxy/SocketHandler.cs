@@ -11,7 +11,12 @@ public enum Types {New, Update, Client};
 
 public class DataObject //Use this as secure communication format
 {
-    public Types type;
+    public Types Type;
+}
+
+public class Direction //use this to send a direction to a user.
+{
+    public string server;
 }
 
 public class SocketHandler
@@ -49,9 +54,20 @@ public class SocketHandler
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
 
-                //If new server connection add to list of servers
-                //If count update count
-                //If client point at server
+                switch (data.Type)
+                {
+                    case Types.New:
+                        ProxyModel.Instance.AddServer("ahh");
+                        break;
+                    case Types.Update:
+                        ProxyModel.Instance.UpdateServer("ahhh");
+                        break;
+                    case Types.Client: //connect to selected server
+                        ProxyModel.Instance.SelectServer();
+                        break;
+                    default:
+                        break;
+                }
 
                 Console.WriteLine(raw);
             }
@@ -67,6 +83,7 @@ public class SocketHandler
         if(socket.State != WebSocketState.Open)
             return;
 
+        //Currently doesn't use the object but we should
         var byteWord = System.Text.Encoding.ASCII.GetBytes(message);
         var sending = new ArraySegment<byte>(byteWord, 0, byteWord.Length);
 

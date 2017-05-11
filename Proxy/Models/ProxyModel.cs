@@ -60,4 +60,9 @@ public sealed class ProxyModel
     {
         //Update numUsers of server here.
     }
+
+    public string SelectServer()
+    {
+        return "ahhh";
+    }
 }
