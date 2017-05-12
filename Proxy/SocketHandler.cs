@@ -74,8 +74,8 @@ public class SocketHandler
                     case Types.Client:
                         //probably encrypt here too
                         var server = ProxyModel.Instance.SelectServer();
+                        Console.WriteLine(server);
                         await ProxyDirect(server);
-                        await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, string.Empty, CancellationToken.None);
                         return;
                     default:
                         break;

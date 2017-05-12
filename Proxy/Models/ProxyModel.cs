@@ -63,7 +63,7 @@ public sealed class ProxyModel
 
     public string SelectServer()
     {
-        return "ahhh";
+        return "ws://129.21.50.69:5000/ws";
     }
 
     private Server GetByName(string name)

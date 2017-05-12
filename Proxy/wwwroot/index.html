@@ -81,18 +81,11 @@ body {
     function doConnect() {
         var initSocket = new WebSocket(uri);
         //do my connection shit here
-        var json = '{ "Type" : "0" , "address" : "" , "numUsers" : "" }';
+        var json = '{ "Type" : "2" , "address" : "" , "numUsers" : "" }';
 
         this.send(initSocket, json);
 
-        initSocket.onmessage = function (e) { write(e); };
-        //initSocket.onClose = doConnectTwo;
-    }
-
-    function doConnectTwo() {
-        var socket = new WebSocket("ahh");
-        socket.onclose = function (e) { write("Connection Lost"); };
-        socket.onmessage = newMessage;
+        initSocket.onmessage = function (e) { myUri = e.data; initSocket.close(); doConnectTwo()}; //maybe move this to it's own doober with whatever decrypt thing
     }
 
     this.send = function (ws, message, callback) {
@@ -113,6 +106,12 @@ body {
                 that.waitForConnection(ws, callback, interval);
             }, interval);
         }
+    }
+
+    function doConnectTwo() {
+        socket = new WebSocket(myUri);
+        socket.onclose = function (e) { write("Connection Lost"); };
+        socket.onmessage = newMessage;
     }
 
     function newMessage(e) {
@@ -140,7 +139,7 @@ body {
         message = message.replace(/\"/g, "\\\"");
         input.value = "";
         var json = '{ "Room" : "' + room + '" , "Username" : "' + username + '" , "Message" : "' + message + '"}';
-        socket.send(json);
+        this.send(socket, json);
     }
 
     function chooseName() {
