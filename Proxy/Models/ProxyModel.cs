@@ -91,8 +91,8 @@ public sealed class ProxyModel
 
     private Server GetLeastUsers()
     {
-        var leastServer = null;
-        var leastUsers = int.MaxValue;
+        Server leastServer = null;
+        int leastUsers = int.MaxValue;
         lock(serverLock)
         {
             foreach(var s in servers)
@@ -104,5 +104,6 @@ public sealed class ProxyModel
                 }
             }
         }
+        return leastServer;
     }
 }
