@@ -8,25 +8,23 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-public class DataObject
+public class Direction //use this to send a direction to a user.
 {
-    public string Room;
-    public string Username;
-    public string Message;
+    public string server;
 }
 
-public class SocketHandler
+public class WebSocketHandler
 {
     public const int BufferSize = 4096;
 
     public WebSocket socket;
 
-    public SocketHandler(WebSocket socket)
+    public WebSocketHandler(WebSocket socket)
     {
         this.socket = socket;
     }
 
-    private async Task ServerReceive()
+    private async Task ProxyReceive()
     {
         var buffer = new byte[BufferSize];
         var seg = new ArraySegment<byte>(buffer);
@@ -34,7 +32,7 @@ public class SocketHandler
         while(true)
         {
             if (socket.State != WebSocketState.Open)
-                break;
+                break;	//Socket no longer open, should only get here from error
 
             try
             {
@@ -42,28 +40,33 @@ public class SocketHandler
 
                 if(result.MessageType == WebSocketMessageType.Close)
                 {
-                    RelayModel.Instance.RemoveClient(this);
+                    //Socket closed
                     break;
                 }
 
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
-                var data = JsonConvert.DeserializeObject<DataObject>(raw);
-                await RelayModel.Instance.PropogateMessage(raw);
+
+                //probably encrypt here too
+                var server = ProxyModel.Instance.SelectServer();
+                Console.WriteLine(server);
+                await ProxyDirect(server);
+                return;
 
                 Console.WriteLine(raw);
             }
             catch
             {
-                System.Console.WriteLine("Error");
+                System.Console.WriteLine("Error"); //Socket recieving failed
             }
         }
     }
 
-    public async Task ServerSend(string message)
+    public async Task ProxyDirect(string message) //Use this only to direct a user towards a server
     {
         if(socket.State != WebSocketState.Open)
             return;
 
+        //Currently doesn't use the object but we should
         var byteWord = System.Text.Encoding.ASCII.GetBytes(message);
         var sending = new ArraySegment<byte>(byteWord, 0, byteWord.Length);
 
@@ -85,9 +88,8 @@ public class SocketHandler
         try
         {
             var socket = await hc.WebSockets.AcceptWebSocketAsync();
-            var h = new SocketHandler(socket);
-            RelayModel.Instance.AddClient(h);
-            await h.ServerReceive();
+            var h = new WebSocketHandler(socket);
+            await h.ProxyReceive();
         }
         catch
         {
@@ -98,6 +100,6 @@ public class SocketHandler
     public static void Map(IApplicationBuilder app)
     {
         app.UseWebSockets();
-        app.Use(SocketHandler.Acceptor);
+        app.Use(WebSocketHandler.Acceptor);
     }
 }

@@ -14,7 +14,7 @@ public sealed class RelayModel
 
     private RelayModel()
     {
-        clients = new List<SocketHandler>();
+        clients = new List<WebSocketHandler>();
     }
 
     public static RelayModel Instance
@@ -33,9 +33,9 @@ public sealed class RelayModel
         }
     }
 
-    private List<SocketHandler> clients;
+    private List<WebSocketHandler> clients;
 
-    public void AddClient(SocketHandler socket)
+    public void AddClient(WebSocketHandler socket)
     {
         Console.WriteLine("Adding client");
         lock(clientLock)
@@ -44,7 +44,7 @@ public sealed class RelayModel
         }
     }
 
-    public void RemoveClient(SocketHandler socket)
+    public void RemoveClient(WebSocketHandler socket)
     {
         Console.WriteLine("Removing client");
         lock(clientLock)

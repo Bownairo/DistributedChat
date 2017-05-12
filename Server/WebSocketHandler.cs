@@ -8,32 +8,25 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 
-public enum Types {New, Update, Client};
-
-public class DataObject //Use this as secure communication format
+public class DataObject
 {
-    public Types Type;
-    public string address;
-    public int numUsers;
+    public string Room;
+    public string Username;
+    public string Message;
 }
 
-public class Direction //use this to send a direction to a user.
-{
-    public string server;
-}
-
-public class SocketHandler
+public class WebSocketHandler
 {
     public const int BufferSize = 4096;
 
     public WebSocket socket;
 
-    public SocketHandler(WebSocket socket)
+    public WebSocketHandler(WebSocket socket)
     {
         this.socket = socket;
     }
 
-    private async Task ProxyReceive()
+    private async Task ServerReceive()
     {
         var buffer = new byte[BufferSize];
         var seg = new ArraySegment<byte>(buffer);
@@ -41,7 +34,7 @@ public class SocketHandler
         while(true)
         {
             if (socket.State != WebSocketState.Open)
-                break;	//Socket no longer open, should only get here from error
+                break;
 
             try
             {
@@ -49,48 +42,28 @@ public class SocketHandler
 
                 if(result.MessageType == WebSocketMessageType.Close)
                 {
-                    //Socket closed
+                    RelayModel.Instance.RemoveClient(this);
                     break;
                 }
 
-                //Decoding here
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
-                var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-                var data = JsonConvert.DeserializeObject<DataObject>(raw, settings);
-
-                switch (data.Type)
-                {
-                    case Types.New:
-                        ProxyModel.Instance.AddServer(data.address);
-                        break;
-                    case Types.Update:
-                        ProxyModel.Instance.UserLeftServer(data.address);
-                        break;
-                    case Types.Client:
-                        //probably encrypt here too
-                        var server = ProxyModel.Instance.SelectServer();
-                        Console.WriteLine(server);
-                        await ProxyDirect(server);
-                        return;
-                    default:
-                        break;
-                }
+                var data = JsonConvert.DeserializeObject<DataObject>(raw);
+                await RelayModel.Instance.PropogateMessage(raw);
 
                 Console.WriteLine(raw);
             }
             catch
             {
-                System.Console.WriteLine("Error"); //Socket recieving failed
+                System.Console.WriteLine("Error");
             }
         }
     }
 
-    public async Task ProxyDirect(string message) //Use this only to direct a user towards a server
+    public async Task ServerSend(string message)
     {
         if(socket.State != WebSocketState.Open)
             return;
 
-        //Currently doesn't use the object but we should
         var byteWord = System.Text.Encoding.ASCII.GetBytes(message);
         var sending = new ArraySegment<byte>(byteWord, 0, byteWord.Length);
 
@@ -112,8 +85,9 @@ public class SocketHandler
         try
         {
             var socket = await hc.WebSockets.AcceptWebSocketAsync();
-            var h = new SocketHandler(socket);
-            await h.ProxyReceive();
+            var h = new WebSocketHandler(socket);
+            RelayModel.Instance.AddClient(h);
+            await h.ServerReceive();
         }
         catch
         {
@@ -124,6 +98,6 @@ public class SocketHandler
     public static void Map(IApplicationBuilder app)
     {
         app.UseWebSockets();
-        app.Use(SocketHandler.Acceptor);
+        app.Use(WebSocketHandler.Acceptor);
     }
 }
