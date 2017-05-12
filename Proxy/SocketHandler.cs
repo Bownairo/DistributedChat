@@ -58,8 +58,8 @@ public class SocketHandler
                 }
 
                 //Decoding here
-				var e_raw = crypt.Decrypt(seg.Array.Take(result.Count).ToArray());
-                var raw = System.Text.Encoding.ASCII.GetString(e_raw);
+				// var e_raw = crypt.Decrypt(seg.Array.Take(result.Count).ToArray());
+                var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
                 var data = JsonConvert.DeserializeObject<DataObject>(raw, settings);
 
@@ -98,11 +98,10 @@ public class SocketHandler
         //Currently doesn't use the object but we should
         var byteWord = System.Text.Encoding.ASCII.GetBytes(message);
         var sending = new ArraySegment<byte>(byteWord, 0, byteWord.Length);
-		var e_sending = crypt.Encrypt(sending);
 
         try
         {
-            await socket.SendAsync(e_sending, WebSocketMessageType.Text, true, CancellationToken.None);
+            await socket.SendAsync(sending, WebSocketMessageType.Text, true, CancellationToken.None);
         }
         catch
         {
