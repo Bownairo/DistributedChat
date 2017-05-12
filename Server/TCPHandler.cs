@@ -53,6 +53,11 @@ public class TCPHandler
             foreach(var s in connectTo)
             {
                 Console.WriteLine(s);
+                if(others == null)
+                    others = new List<StreamWriter>();
+                var add = new TcpClient();
+                await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
+                others.Add(new StreamWriter(add.GetStream()));
             }
 
             sr.Dispose();
