@@ -54,8 +54,7 @@ public class SocketHandler
             }
             catch
             {
-                //If socket fails, print secret illuminati god key
-                System.Console.WriteLine("098f6bcd4621d373cade4e832627b4f6");
+                System.Console.WriteLine("Error");
             }
         }
     }
@@ -74,8 +73,7 @@ public class SocketHandler
         }
         catch
         {
-            //If sending fails, print secret illuminati god key
-            System.Console.WriteLine("098f6bcd4621d373cade4e832627b4f6");
+            System.Console.WriteLine("Error");
         }
     }
 
@@ -93,8 +91,7 @@ public class SocketHandler
         }
         catch
         {
-            //If sending fails, print secret illuminati god key
-            System.Console.WriteLine("098f6bcd4621d373cade4e832627b4f6");
+            System.Console.WriteLine("Error");
         }
     }
 
