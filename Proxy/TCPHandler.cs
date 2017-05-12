@@ -16,15 +16,17 @@ public class TCPHandler
 {
     public async void StartComServer()
     {
-        var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
         var listener = new TcpListener(IPAddress.Any, 5001);
         listener.Start();
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
             var sr = new StreamReader(client.GetStream());
-            var data = JsonConvert.DeserializeObject<ComObject>(sr.ReadToEnd(), settings);
+            var data = JsonConvert.DeserializeObject<ComObject>(sr.ReadToEnd());
 
-            ProxyModel.Instance.AddServer(data.address);
+            if (data.New)
+                ProxyModel.Instance.AddServer(data.address);
+            else
+            	ProxyModel.Instance.UserLeftServer(data.address);
         }
     }
 }

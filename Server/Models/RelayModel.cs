@@ -47,6 +47,8 @@ public sealed class RelayModel
     public void RemoveClient(WebSocketHandler socket)
     {
         Console.WriteLine("Removing client");
+        var updateTCP = new TCPHandler();
+        updateTCP.UserLeft();
         lock(clientLock)
         {
             clients.Remove(socket);

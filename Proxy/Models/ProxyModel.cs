@@ -58,7 +58,10 @@ public sealed class ProxyModel
 
     public void UserLeftServer(string loc)
     {
-        GetByLoc(loc).NumUsers--;
+        Console.WriteLine("User left server");
+        var server = GetByLoc(loc);
+        server.NumUsers--;
+        Console.WriteLine("Count: " + server.NumUsers);
     }
 
     public string SelectServer()
