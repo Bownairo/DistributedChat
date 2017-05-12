@@ -16,6 +16,12 @@ public class ComObject
     public string Websocket;
 }
 
+public class InternalComObject
+{
+    public bool Add;
+    public string Body;
+}
+
 public class TCPHandler
 {
     static string myAddress;
@@ -26,6 +32,7 @@ public class TCPHandler
     {
         myWebsocket = websocket;
         myAddress = address;
+        others = new List<StreamWriter>();
     }
 
     public async void StartCom()
@@ -48,16 +55,23 @@ public class TCPHandler
             sw.WriteLine(data);
             sw.Flush();
 
-            var connectTo = JsonConvert.DeserializeObject<List<string>>(sr.ReadLine());
+            var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+            var connectTo = JsonConvert.DeserializeObject<List<string>>(sr.ReadLine(), settings);
 
             foreach(var s in connectTo)
             {
                 Console.WriteLine(s);
-                if(others == null)
-                    others = new List<StreamWriter>();
                 var add = new TcpClient();
                 await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
-                others.Add(new StreamWriter(add.GetStream()));
+
+				var temp = new StreamWriter(add.GetStream());
+
+				var InternalPackage = new InternalComObject();
+				InternalPackage.Add = true;
+
+				temp.WriteLine(JsonConvert.SerializeObject(InternalPackage, settings));
+				temp.Flush();
+                others.Add(temp);
             }
 
             sr.Dispose();
@@ -72,16 +86,26 @@ public class TCPHandler
         }
     }
 
-    public async void ListenForOthers()
+    public async void ListenForOthers() //Listen for add requests and propogated messages
     {
         Console.WriteLine("Listening for others");
         var listener = new TcpListener(IPAddress.Any, int.Parse(myAddress.Split(':')[1]));
         listener.Start();
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
+            //add a check to make sure it's not a closing doober
             var sr = new StreamReader(client.GetStream());
-            Console.WriteLine(sr.ReadLine());
+            var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
+            if(message.Add)
+            {
+                others.Add(new StreamWriter(client.GetStream()));
+            }
+            else
+            {
+                //propogate here
+            }
             sr.Dispose();
+            client.Dispose();
         }
     }
 

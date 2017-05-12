@@ -26,7 +26,8 @@ public class TCPHandler
             var client = await listener.AcceptTcpClientAsync();
             var sr = new StreamReader(client.GetStream());
             var sw = new StreamWriter(client.GetStream());
-            var data = JsonConvert.DeserializeObject<ComObject>(sr.ReadLine());
+            var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+            var data = JsonConvert.DeserializeObject<ComObject>(sr.ReadLine(), settings);
 
             if (data.New)
             {
@@ -44,6 +45,7 @@ public class TCPHandler
             	ProxyModel.Instance.UserLeftServer(data.Address);
             sw.Dispose();
             sr.Dispose();
+            client.Dispose();
         }
     }
 }
