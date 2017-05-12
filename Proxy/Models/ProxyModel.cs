@@ -63,11 +63,10 @@ public sealed class ProxyModel
 
     public string SelectServer()
     {
-        return "ws://129.21.50.69:5000/ws";
-        //var destination = GetLeastUsers();
-        //destination.NumUsers--;
-        //return destination.Location;
-        //return GetLeastUsers().Location;
+        var destination = GetLeastUsers();
+        destination.NumUsers++;
+        return destination.Location;
+        return GetLeastUsers().Location;
     }
 
     public void ProvisionServer(string loc)

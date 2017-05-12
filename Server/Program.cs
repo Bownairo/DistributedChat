@@ -12,7 +12,7 @@ namespace WebApplication
     public class Program
     {
 
-        public static string myLocation = "http://localhost:5000";
+        public static string myLocation = "ws://localhost:5000/ws";
 
         public static void Main(string[] args)
         {
@@ -29,7 +29,7 @@ namespace WebApplication
 
             var location = config.GetSection("server.urls").Value;
             if(location != "")
-                myLocation = location;
+                myLocation = location.Replace("http", "ws") + "/ws";
             host.Run();
         }
     }

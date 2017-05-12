@@ -15,7 +15,7 @@ public class TCPHandler
             var client = await listener.AcceptTcpClientAsync();
 
             var sr = new StreamReader(client.GetStream());
-            Console.WriteLine(sr.ReadToEnd());
+            ProxyModel.Instance.AddServer(sr.ReadToEnd());
         }
     }
 }
