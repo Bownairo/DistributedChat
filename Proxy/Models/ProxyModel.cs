@@ -8,12 +8,12 @@ using Newtonsoft.Json;
 
 public class Server
 {
-    private string location;
+    public string Location {get;}
     public int NumUsers {get; set;}
 
     public Server (string location)
     {
-        this.location = location;
+        Location = location;
         NumUsers = 0;
     }
 }
@@ -56,18 +56,45 @@ public sealed class ProxyModel
         }
     }
 
-    public void UpdateServer(string name, int numUsers)
+    public void UpdateServer(string loc, int numUsers)
     {
-        GetByName(name).NumUsers = numUsers;
+        GetByLoc(loc).NumUsers = numUsers;
     }
 
     public string SelectServer()
     {
         return "ws://129.21.50.69:5000/ws";
+        //return GetLeastUsers().Location;
     }
 
-    private Server GetByName(string name)
+    private Server GetByLoc(string loc)
     {
-        return null;
+        lock(serverLock)
+        {
+            foreach(var s in servers)
+            {
+                if(s.Location == loc)
+                    return s;
+            }
+        }
+
+        return null; //probably break harder than this.
+    }
+
+    private Server GetLeastUsers()
+    {
+        var leastServer = null;
+        var leastUsers = int.MaxValue;
+        lock(serverLock)
+        {
+            foreach(var s in servers)
+            {
+                if(s.NumUsers < leastUsers)
+                {
+                    leastServer = s;
+                    leastUsers = s.NumUsers;
+                }
+            }
+        }
     }
 }
