@@ -63,11 +63,25 @@ public class TCPHandler
             sr.Dispose();
             sw.Dispose();
             client.Dispose();
+            ListenForOthers();
         }
         catch
         {
             Console.WriteLine("Can't see server");
             Environment.Exit(-1);
+        }
+    }
+
+    public async void ListenForOthers()
+    {
+        Console.WriteLine("Listening for others");
+        var listener = new TcpListener(IPAddress.Any, int.Parse(myAddress.Split(':')[1]));
+        listener.Start();
+        for(;;) {
+            var client = await listener.AcceptTcpClientAsync();
+            var sr = new StreamReader(client.GetStream());
+            Console.WriteLine(sr.ReadLine());
+            sr.Dispose();
         }
     }
 
