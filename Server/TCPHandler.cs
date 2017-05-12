@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using WebApplication;
 
 public class TCPHandler
 {
@@ -13,8 +14,9 @@ public class TCPHandler
         await client.ConnectAsync("localhost", 5001);
 
         var sw = new StreamWriter(client.GetStream());
-        sw.Write("My address");
+        sw.Write(Program.myLocation);
         sw.Flush();
         sw.Dispose();
+        client.Dispose();
     }
 }

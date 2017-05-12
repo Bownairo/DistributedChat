@@ -11,6 +11,9 @@ namespace WebApplication
 {
     public class Program
     {
+
+        public static string myLocation = "http://localhost:5000";
+
         public static void Main(string[] args)
         {
             var config = new ConfigurationBuilder()
@@ -24,6 +27,9 @@ namespace WebApplication
                 .UseStartup<Startup>()
                 .Build();
 
+            var location = config.GetSection("server.urls").Value;
+            if(location != "")
+                myLocation = location;
             host.Run();
         }
     }

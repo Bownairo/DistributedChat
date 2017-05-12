@@ -29,9 +29,6 @@ namespace WebApplication
 
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
-
-            var initTCP = new TCPHandler();
-            initTCP.StartClient();
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -63,6 +60,9 @@ namespace WebApplication
             app.UseStaticFiles();
 
             app.Map("/ws", WebSocketHandler.Map);
+
+            var initTCP = new TCPHandler();
+            initTCP.StartClient();
         }
     }
 }
