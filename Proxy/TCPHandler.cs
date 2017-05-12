@@ -4,16 +4,20 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 public class ComObject
 {
     public bool New;
-    public string address;
+    public string Address;
+    public string Websocket;
 }
 
 public class TCPHandler
 {
+    static List<string> ServerList;
+
     public async void StartComServer()
     {
         var listener = new TcpListener(IPAddress.Any, 5001);
@@ -26,12 +30,18 @@ public class TCPHandler
 
             if (data.New)
             {
-                ProxyModel.Instance.AddServer(data.address);
-                sw.WriteLine("List of servers");
+                if(ServerList == null)
+                    ServerList = new List<string>();
+                ProxyModel.Instance.AddServer(data.Websocket);
+
+                var list = JsonConvert.SerializeObject(ServerList);
+                sw.WriteLine(list);
+
+                ServerList.Add(data.Address);
                 sw.Flush();
             }
             else
-            	ProxyModel.Instance.UserLeftServer(data.address);
+            	ProxyModel.Instance.UserLeftServer(data.Address);
             sw.Dispose();
             sr.Dispose();
         }

@@ -12,7 +12,8 @@ namespace WebApplication
     public class Program
     {
 
-        static string myLocation = "ws://localhost:5000/ws";
+        static string myWebsocket = "ws://localhost:5000/ws";
+        static string myAddress;
 
         public static void Main(string[] args)
         {
@@ -29,10 +30,18 @@ namespace WebApplication
 
             var location = config.GetSection("server.urls").Value;
             if(location != null)
-                myLocation = location.Replace("http", "ws") + "/ws";
+                myWebsocket = location.Replace("http", "ws") + "/ws";
+
+            myAddress = config.GetSection("myAddress").Value;
+            if(myAddress == null)
+            {
+                Console.WriteLine("Please specify address for TCP");
+                Environment.Exit(-1);
+            }
 
             var initTCP = new TCPHandler();
-            initTCP.StartCom(myLocation);
+            initTCP.Init(myWebsocket, myAddress);
+            initTCP.StartCom();
             host.Run();
         }
     }

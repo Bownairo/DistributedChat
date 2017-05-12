@@ -13,19 +13,26 @@ public class ComObject
 {
     public bool New;
     public string Address;
+    public string Websocket;
 }
 
 public class TCPHandler
 {
     static string myAddress;
+    static string myWebsocket;
     static List<StreamWriter> others;
 
-    public async void StartCom(string address)
+    public void Init(string websocket, string address)
     {
+        myWebsocket = websocket;
         myAddress = address;
+    }
 
+    public async void StartCom()
+    {
         var package = new ComObject();
         package.Address = myAddress;
+        package.Websocket = myWebsocket;
         package.New = true;
 
 		var data = JsonConvert.SerializeObject(package);
@@ -41,7 +48,12 @@ public class TCPHandler
             sw.WriteLine(data);
             sw.Flush();
 
-            Console.WriteLine(sr.ReadLine());
+            var connectTo = JsonConvert.DeserializeObject<List<string>>(sr.ReadLine());
+
+            foreach(var s in connectTo)
+            {
+                Console.WriteLine(s);
+            }
 
             sr.Dispose();
             sw.Dispose();
