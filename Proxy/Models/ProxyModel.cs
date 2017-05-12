@@ -49,7 +49,7 @@ public sealed class ProxyModel
 
     public void AddServer(string location)
     {
-        Console.WriteLine("Adding server");
+        Console.WriteLine("Adding server: " + location);
         lock(serverLock)
         {
             servers.Add(new Server(location));

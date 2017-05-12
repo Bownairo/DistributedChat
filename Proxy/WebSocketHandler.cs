@@ -10,7 +10,7 @@ using Newtonsoft.Json;
 
 public class Direction //use this to send a direction to a user.
 {
-    public string server;
+    public string Server;
 }
 
 public class WebSocketHandler
@@ -60,12 +60,15 @@ public class WebSocketHandler
         }
     }
 
-    public async Task ProxyDirect(string message) //Use this only to direct a user towards a server
+    public async Task ProxyDirect(string server) //Use this only to direct a user towards a server
     {
         if(socket.State != WebSocketState.Open)
             return;
 
-        //Currently doesn't use the object but we should
+        var direction = new Direction();
+        direction.Server = server;
+        var message = JsonConvert.SerializeObject(direction);
+
         var byteWord = System.Text.Encoding.ASCII.GetBytes(message);
         var sending = new ArraySegment<byte>(byteWord, 0, byteWord.Length);
 

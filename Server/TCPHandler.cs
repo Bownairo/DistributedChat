@@ -16,10 +16,10 @@ public class ComObject
 
 public class TCPHandler
 {
-    public async void StartCom()
+    public async void StartCom(string address)
     {
         var package = new ComObject();
-        package.Address = Program.myLocation;
+        package.Address = address;
 
         var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
 		var data = JsonConvert.SerializeObject(package, settings);

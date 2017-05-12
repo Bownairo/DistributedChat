@@ -60,9 +60,6 @@ namespace WebApplication
             app.UseStaticFiles();
 
             app.Map("/ws", WebSocketHandler.Map);
-
-            var initTCP = new TCPHandler();
-            initTCP.StartCom();
         }
     }
 }

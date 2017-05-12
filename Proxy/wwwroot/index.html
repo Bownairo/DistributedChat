@@ -85,7 +85,7 @@ body {
 
         this.send(initSocket, json);
 
-        initSocket.onmessage = function (e) { myUri = e.data; initSocket.close(); doConnectTwo()}; //maybe move this to it's own doober with whatever decrypt thing
+        initSocket.onmessage = function (e) { myUri = JSON.parse(e.data).Server; initSocket.close(); doConnectTwo()}; //maybe move this to it's own doober with whatever decrypt thing
     }
 
     this.send = function (ws, message, callback) {
