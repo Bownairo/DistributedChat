@@ -17,6 +17,8 @@ public class DataObject
 public class SocketHandler
 {
     public const int BufferSize = 4096;
+	private const CryptoKey key;
+	private const RSACryptoServiceProvider crypt;
 
     public WebSocket socket;
 
@@ -45,7 +47,8 @@ public class SocketHandler
                     break;
                 }
 
-                var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
+				var e_raw = crypt.Decrypt(seg.Array.Take(result.Count).ToArray());
+                var raw = System.Text.Encoding.ASCII.GetString(e_raw);
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
                 await RelayModel.Instance.PropogateMessage(raw);
 

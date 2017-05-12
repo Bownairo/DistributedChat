@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -24,12 +25,16 @@ public class Direction //use this to send a direction to a user.
 public class SocketHandler
 {
     public const int BufferSize = 4096;
+	private const CryptoKey key;
+	private const RSACryptoServiceProvider crypt;
 
     public WebSocket socket;
 
     public SocketHandler(WebSocket socket)
     {
         this.socket = socket;
+		this.key = CryptoKey();
+		this.crypt = RSACryptoServiceProvider(key);
     }
 
     private async Task ProxyReceive()
@@ -53,7 +58,8 @@ public class SocketHandler
                 }
 
                 //Decoding here
-                var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
+				var e_raw = crypt.Decrypt(seg.Array.Take(result.Count).ToArray());
+                var raw = System.Text.Encoding.ASCII.GetString(e_raw);
                 var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
                 var data = JsonConvert.DeserializeObject<DataObject>(raw, settings);
 
@@ -92,10 +98,11 @@ public class SocketHandler
         //Currently doesn't use the object but we should
         var byteWord = System.Text.Encoding.ASCII.GetBytes(message);
         var sending = new ArraySegment<byte>(byteWord, 0, byteWord.Length);
+		var e_sending = crypt.Encrypt(sending);
 
         try
         {
-            await socket.SendAsync(sending, WebSocketMessageType.Text, true, CancellationToken.None);
+            await socket.SendAsync(e_sending, WebSocketMessageType.Text, true, CancellationToken.None);
         }
         catch
         {
