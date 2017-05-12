@@ -21,12 +21,19 @@ public class TCPHandler
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
             var sr = new StreamReader(client.GetStream());
-            var data = JsonConvert.DeserializeObject<ComObject>(sr.ReadToEnd());
+            var sw = new StreamWriter(client.GetStream());
+            var data = JsonConvert.DeserializeObject<ComObject>(sr.ReadLine());
 
             if (data.New)
+            {
                 ProxyModel.Instance.AddServer(data.address);
+                sw.WriteLine("List of servers");
+                sw.Flush();
+            }
             else
             	ProxyModel.Instance.UserLeftServer(data.address);
+            sw.Dispose();
+            sr.Dispose();
         }
     }
 }

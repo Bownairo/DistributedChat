@@ -57,6 +57,7 @@ public sealed class RelayModel
 
     public async Task PropogateMessage(string json)
     {
+        //Also propogate along TCP channels
         Console.WriteLine("Received message");
         foreach(var s in clients)
             await s.ServerSend(json);

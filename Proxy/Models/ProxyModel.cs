@@ -68,10 +68,11 @@ public sealed class ProxyModel
     {
         var destination = GetLeastUsers();
         destination.NumUsers++;
+        Console.WriteLine("Count: " + destination.NumUsers);
         return destination.Location;
     }
 
-    public void ProvisionServer(string loc)
+    private void ProvisionServer(string loc)
     {
         //Communicate to all servers that they need to let someone new in
     }

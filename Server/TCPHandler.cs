@@ -4,6 +4,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 using Newtonsoft.Json;
 
 using WebApplication;
@@ -17,6 +18,7 @@ public class ComObject
 public class TCPHandler
 {
     static string myAddress;
+    static List<StreamWriter> others;
 
     public async void StartCom(string address)
     {
@@ -34,8 +36,14 @@ public class TCPHandler
             await client.ConnectAsync("localhost", 5001); //Proxy
 
             var sw = new StreamWriter(client.GetStream());
-            sw.Write(data);
+            var sr = new StreamReader(client.GetStream());
+
+            sw.WriteLine(data);
             sw.Flush();
+
+            Console.WriteLine(sr.ReadLine());
+
+            sr.Dispose();
             sw.Dispose();
             client.Dispose();
         }
