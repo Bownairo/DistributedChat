@@ -66,7 +66,6 @@ public sealed class ProxyModel
         var destination = GetLeastUsers();
         destination.NumUsers++;
         return destination.Location;
-        return GetLeastUsers().Location;
     }
 
     public void ProvisionServer(string loc)

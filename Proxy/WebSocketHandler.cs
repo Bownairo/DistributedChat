@@ -50,9 +50,8 @@ public class WebSocketHandler
                 var server = ProxyModel.Instance.SelectServer();
                 Console.WriteLine(server);
                 await ProxyDirect(server);
-                return;
-
                 Console.WriteLine(raw);
+                return;
             }
             catch
             {
