@@ -29,6 +29,9 @@ namespace WebApplication
 
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
+
+
+            //Start TCP here
         }
 
         public IConfigurationRoot Configuration { get; }
@@ -59,8 +62,7 @@ namespace WebApplication
             app.UseDefaultFiles();
             app.UseStaticFiles();
 
-            app.Map("/ws", SocketHandler.Map);
-
+            app.Map("/ws", WebSocketHandler.Map);
         }
     }
 }
