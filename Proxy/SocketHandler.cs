@@ -64,7 +64,7 @@ public class SocketHandler
                         ProxyModel.Instance.AddServer(data.address);
                         break;
                     case Types.Update:
-                        ProxyModel.Instance.UpdateServer(data.address, data.numUsers);
+                        ProxyModel.Instance.UserLeftServer(data.address);
                         break;
                     case Types.Client:
                         //probably encrypt here too

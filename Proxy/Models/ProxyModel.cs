@@ -56,15 +56,23 @@ public sealed class ProxyModel
         }
     }
 
-    public void UpdateServer(string loc, int numUsers)
+    public void UserLeftServer(string loc)
     {
-        GetByLoc(loc).NumUsers = numUsers;
+        GetByLoc(loc).NumUsers--;
     }
 
     public string SelectServer()
     {
         return "ws://129.21.50.69:5000/ws";
+        //var destination = GetLeastUsers();
+        //destination.NumUsers--;
+        //return destination.Location;
         //return GetLeastUsers().Location;
+    }
+
+    public void ProvisionServer(string loc)
+    {
+        //Communicate to all servers that they need to let someone new in
     }
 
     private Server GetByLoc(string loc)
