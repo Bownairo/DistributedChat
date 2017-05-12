@@ -7,13 +7,14 @@ using System.Threading.Tasks;
 
 public class TCPHandler
 {
-    public async void startClient()
+    public async void StartClient()
     {
-        Console.WriteLine("Started TCP client");
         var client = new TcpClient();
         await client.ConnectAsync("localhost", 5001);
 
-        var sr = new StreamReader(client.GetStream());
-        Console.WriteLine(sr.ReadToEnd());
+        var sw = new StreamWriter(client.GetStream());
+        sw.Write("My address");
+        sw.Flush();
+        sw.Dispose();
     }
 }

@@ -7,17 +7,15 @@ using System.Threading.Tasks;
 
 public class TCPHandler
 {
-    public async void startServer()
+    public async void StartAddingServer()
     {
         var listener = new TcpListener(IPAddress.Any, 5001);
         listener.Start();
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
 
-            var sw = new StreamWriter(client.GetStream());
-            sw.Write("Initial TCP");
-            sw.Flush();
-            sw.Dispose();
+            var sr = new StreamReader(client.GetStream());
+            Console.WriteLine(sr.ReadToEnd());
         }
     }
 }

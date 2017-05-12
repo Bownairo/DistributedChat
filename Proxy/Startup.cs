@@ -31,7 +31,8 @@ namespace WebApplication
             Configuration = builder.Build();
 
 
-            //Start TCP here
+            var initTCP = new TCPHandler();
+            initTCP.StartAddingServer();
         }
 
         public IConfigurationRoot Configuration { get; }

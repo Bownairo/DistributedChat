@@ -30,8 +30,8 @@ namespace WebApplication
             builder.AddEnvironmentVariables();
             Configuration = builder.Build();
 
-
-            //Start TCP here
+            var initTCP = new TCPHandler();
+            initTCP.StartClient();
         }
 
         public IConfigurationRoot Configuration { get; }
