@@ -28,7 +28,7 @@ namespace WebApplication
                 .Build();
 
             var location = config.GetSection("server.urls").Value;
-            if(location != "")
+            if(location != null)
                 myLocation = location.Replace("http", "ws") + "/ws";
             host.Run();
         }

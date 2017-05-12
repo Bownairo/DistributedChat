@@ -4,19 +4,41 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
+
 using WebApplication;
+
+public class ComObject
+{
+    public bool New;
+    public string Address;
+}
 
 public class TCPHandler
 {
-    public async void StartClient()
+    public async void StartCom()
     {
-        var client = new TcpClient();
-        await client.ConnectAsync("localhost", 5001);
+        var package = new ComObject();
+        package.Address = Program.myLocation;
 
-        var sw = new StreamWriter(client.GetStream());
-        sw.Write(Program.myLocation);
-        sw.Flush();
-        sw.Dispose();
-        client.Dispose();
+        var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
+		var data = JsonConvert.SerializeObject(package, settings);
+
+        var client = new TcpClient();
+        try
+        {
+            await client.ConnectAsync("localhost", 5001); //Proxy
+
+            var sw = new StreamWriter(client.GetStream());
+            sw.Write(data);
+            sw.Flush();
+            sw.Dispose();
+            client.Dispose();
+        }
+        catch
+        {
+            Console.WriteLine("Can't see server");
+            Environment.Exit(-1);
+        }
     }
 }

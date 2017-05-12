@@ -62,7 +62,7 @@ namespace WebApplication
             app.Map("/ws", WebSocketHandler.Map);
 
             var initTCP = new TCPHandler();
-            initTCP.StartClient();
+            initTCP.StartCom();
         }
     }
 }
