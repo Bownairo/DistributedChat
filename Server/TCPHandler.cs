@@ -240,7 +240,7 @@ public class TCPHandler
         var client = new TcpClient();
         try
         {
-            await client.ConnectAsync("localhost", 5001); //Proxy
+            await client.ConnectAsync("localhost", 6000); //Proxy
 
             var sw = client.GetStream();
 			var b_data = Encrypt(data);
