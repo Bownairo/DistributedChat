@@ -119,7 +119,8 @@ public void PrintByteArray(byte[] bytes)
             }
 
         }
-            return plaintext;
+		var i = plaintext.IndexOf('\0');
+        return plaintext.Substring(0, i);
     }
 
     public const int BufferSize = 4096;
@@ -146,7 +147,6 @@ public void PrintByteArray(byte[] bytes)
 
             var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
             var connectTo = JsonConvert.DeserializeObject<List<string>>(sr.ReadLine(), settings);
-			byte[] encrypted;
 
             foreach(var s in connectTo)
             {
@@ -183,8 +183,6 @@ public void PrintByteArray(byte[] bytes)
         var listener = new TcpListener(IPAddress.Any, int.Parse(myAddress.Split(':')[1]));
 		var buffer = new byte[BufferSize];
         listener.Start();
-		// var plaintext = new Char[BufferSize];
-		string plaintext = null;
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
             //add a check to make sure it's not a closing doober or maybe not
