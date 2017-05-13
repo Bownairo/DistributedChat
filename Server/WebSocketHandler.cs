@@ -18,8 +18,10 @@ public class DataObject
 public class WebSocketHandler
 {
     public const int BufferSize = 4096;
+	private const Int64 span_limit = 200;
 
     public WebSocket socket;
+	private DateTime recent_message = DateTime.Now;
 
     public WebSocketHandler(WebSocket socket)
     {
@@ -39,6 +41,12 @@ public class WebSocketHandler
             try
             {
                 var result = await socket.ReceiveAsync(seg, CancellationToken.None);
+				if (DateTime.Now - recent_message <= TimeSpan(span_limit)) {
+					socket.Close();
+				}
+				else {
+					recent_message = DateTime.Now;
+				}
 
                 if(result.MessageType == WebSocketMessageType.Close)
                 {
