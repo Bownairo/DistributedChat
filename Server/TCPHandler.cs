@@ -242,8 +242,9 @@ public class TCPHandler
         {
             await client.ConnectAsync("localhost", 5001); //Proxy
 
-            var sw = new StreamWriter(client.GetStream());
-            sw.Write(data);
+            var sw = client.GetStream();
+			var b_data = Encrypt(data);
+            sw.Write(b_data, 0, b_data.Length);
             sw.Flush();
             sw.Dispose();
             client.Dispose();
