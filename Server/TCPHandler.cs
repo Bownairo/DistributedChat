@@ -3,7 +3,8 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.Security;
-using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
@@ -67,7 +68,7 @@ public class TCPHandler
 
 
 				var secure = new SslStream(add.GetStream());
-				secure.AuthenticateAsServer(new X509Certificate());
+				await secure.AuthenticateAsServerAsync(new X509Certificate());
 				var temp = new StreamWriter(secure);
 				var tempRead = new StreamReader(secure);
 
@@ -101,7 +102,7 @@ public class TCPHandler
             var client = await listener.AcceptTcpClientAsync();
             //add a check to make sure it's not a closing doober or maybe not
 			var secure = new SslStream(client.GetStream());
-			secure.AuthenticateAsClient("localhost");
+			await secure.AuthenticateAsClientAsync("localhost");
             var sr = new StreamReader(secure);
             var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
             if(message.Add)
@@ -133,7 +134,7 @@ public class TCPHandler
             {
                 await client.ConnectAsync(other.Split(':')[0], int.Parse(other.Split(':')[1]));
 				var secure = new SslStream(client.GetStream());
-				secure.AuthenticateAsServer(new X509Certificate());
+				await secure.AuthenticateAsServerAsync(new X509Certificate());
                 var sw = new StreamWriter(secure);
                 sw.Write(data);
                 sw.Flush();

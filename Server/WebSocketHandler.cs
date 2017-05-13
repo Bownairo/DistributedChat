@@ -41,8 +41,9 @@ public class WebSocketHandler
             try
             {
                 var result = await socket.ReceiveAsync(seg, CancellationToken.None);
-				if (DateTime.Now - recent_message <= TimeSpan(span_limit)) {
-					socket.Close();
+				if ((DateTime.Now - recent_message).Ticks <= span_limit) {
+					RelayModel.Instance.RemoveClient(this);
+					break;
 				}
 				else {
 					recent_message = DateTime.Now;
