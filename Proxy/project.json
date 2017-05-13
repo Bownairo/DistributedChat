@@ -3,8 +3,7 @@
 
   "dependencies": {
     "Microsoft.NETCore.App": {
-      "version": "1.1.0-preview1-001153-00",
-      "type": "platform"
+      "version": "1.1.0-preview1-001153-00"
     },
     "Microsoft.AspNetCore.Authentication.Cookies": "1.0.0",
     "Microsoft.AspNetCore.Diagnostics": "1.0.0",
@@ -115,7 +114,6 @@
   "runtimes": {
       "win10-x64": {},
       "osx.10.10-x64": {},
-      "osx.10.12-x64": {},
       "ubuntu.16.10-x64": {}
   }
 }
