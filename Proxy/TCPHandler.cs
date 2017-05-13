@@ -42,7 +42,8 @@ public class TCPHandler
                 sw.Flush();
             }
             else
-            	ProxyModel.Instance.UserLeftServer(data.Address);
+            	ProxyModel.Instance.UserLeftServer(data.Websocket);
+
             sw.Dispose();
             sr.Dispose();
             client.Dispose();

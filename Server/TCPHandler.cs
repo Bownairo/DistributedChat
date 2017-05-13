@@ -93,7 +93,7 @@ public class TCPHandler
         listener.Start();
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
-            //add a check to make sure it's not a closing doober
+            //add a check to make sure it's not a closing doober or maybe not
             var sr = new StreamReader(client.GetStream());
             var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
             if(message.Add)
@@ -113,6 +113,7 @@ public class TCPHandler
     {
         var package = new ComObject();
         package.Address = myAddress;
+        package.Websocket = myWebsocket;
         package.New = false;
 
         var data = JsonConvert.SerializeObject(package);
