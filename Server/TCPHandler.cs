@@ -31,96 +31,86 @@ public class TCPHandler
     static string myAddress;
     static string myWebsocket;
     static List<string> others;
-	// static Aes security;
 	static byte[] key;
 	static byte[] iv;
-	// static ICryptoTransform e;
-	// static ICryptoTransform d;
 
     public void Init(string websocket, string address)
     {
         myWebsocket = websocket;
         myAddress = address;
         others = new List<string>();
-        //security = Aes.Create();
 		key = new byte[] { 136, 77, 169, 60, 5, 109, 61, 3, 23, 226, 114, 139, 240, 73, 52, 234 };
-		//security.Key = new byte[] { 136, 77, 169, 60, 5, 109, 61, 3, 23, 226, 114, 139, 240, 73, 52, 234, 65, 236, 89, 255, 25, 214, 135, 113, 131, 242, 226, 75, 35, 35, 227, 68, };
 	 	iv = new byte[] { 178, 102, 153, 177, 84, 41, 185, 203, 15, 20, 139, 186, 170, 114, 181, 13 };
-
-		// e = security.CreateEncryptor(security.Key, security.IV);
-		// d = security.CreateDecryptor(security.Key, security.IV);
     }
 
-public void PrintByteArray(byte[] bytes)
-{
-    var sb = new StringBuilder("new byte[] { ");
-    foreach (var b in bytes)
-    {
-        sb.Append(b + ", ");
-    }
-    sb.Append("}");
-    Console.WriteLine(sb.ToString());
-}
+	public void PrintByteArray(byte[] bytes)
+	{
+	    var sb = new StringBuilder("new byte[] { ");
+	    foreach (var b in bytes)
+	    {
+	        sb.Append(b + ", ");
+	    }
+	    sb.Append("}");
+	    Console.WriteLine(sb.ToString());
+	}
 
 	private byte[] Encrypt(string plainText)
-    {
-        // Check arguments.
-        if (plainText == null || plainText.Length <= 0)
-            throw new ArgumentNullException("plainText");
-        byte[] encrypted;
+	{
+		if (plainText == null || plainText.Length <= 0)
+		throw new ArgumentNullException("plainText");
+		byte[] encrypted;
 
-        using (Aes sec = Aes.Create())
-        {
-            sec.Key = key;
-            sec.IV = iv;
+		using (Aes sec = Aes.Create())
+		{
+			sec.Key = key;
+			sec.IV = iv;
 			sec.Padding = PaddingMode.Zeros;
 
-            ICryptoTransform encryptor = sec.CreateEncryptor(sec.Key, sec.IV);
+			ICryptoTransform encryptor = sec.CreateEncryptor(sec.Key, sec.IV);
 
-            using (MemoryStream msEncrypt = new MemoryStream())
-            {
-                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                {
-                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
-                    {
-                            swEncrypt.Write(plainText);
-                    }
-                    encrypted = msEncrypt.ToArray();
-                }
-            }
-        }
-        return encrypted;
-    }
+			using (MemoryStream msEncrypt = new MemoryStream())
+			{
+				using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+				{
+					using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+					{
+						swEncrypt.Write(plainText);
+					}
+					encrypted = msEncrypt.ToArray();
+				}
+			}
+		}
+		return encrypted;
+	}
 
 	private string Decrypt(byte[] cipherText)
-    {
-            // Check arguments.
-        if (cipherText == null || cipherText.Length <= 0)
-            throw new ArgumentNullException("cipherText");
-        string plaintext = null;
+	{
+		if (cipherText == null || cipherText.Length <= 0)
+			throw new ArgumentNullException("cipherText");
+		string plaintext = null;
 
-        using (Aes sec = Aes.Create())
-        {
-            sec.Key = key;
-            sec.IV = iv;
+		using (Aes sec = Aes.Create())
+		{
+			sec.Key = key;
+			sec.IV = iv;
 			sec.Padding = PaddingMode.Zeros;
 
-            ICryptoTransform decryptor = sec.CreateDecryptor(sec.Key, sec.IV);
+			ICryptoTransform decryptor = sec.CreateDecryptor(sec.Key, sec.IV);
 
-            using (MemoryStream msDecrypt = new MemoryStream(cipherText))
-            {
-                using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                {
-                    using (StreamReader srDecrypt = new StreamReader(csDecrypt))
-                    {
-                        plaintext = srDecrypt.ReadToEnd();
-                    }
-                }
-            }
+			using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+			{
+				using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+				{
+					using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+					{
+						plaintext = srDecrypt.ReadToEnd();
+					}
+				}
+			}
 
-        }
+		}
 		var i = plaintext.IndexOf('\0');
-        return plaintext.Substring(0, i);
+		return plaintext.Substring(0, i);
     }
 
     public const int BufferSize = 4096;
@@ -139,14 +129,16 @@ public void PrintByteArray(byte[] bytes)
         {
             await client.ConnectAsync("localhost", 6000); //Proxy
 
-            var sw = new StreamWriter(client.GetStream());
-            var sr = new StreamReader(client.GetStream());
+            var sw = client.GetStream();
+            var sr = client.GetStream();
 
-            sw.WriteLine(data);
+			var b_data = Encrypt(data);
+			sw.Write(b_data, 0, b_data.Length);
             sw.Flush();
 
+			sr.Read(buffer, 0, BufferSize);
             var settings = new JsonSerializerSettings { NullValueHandling = NullValueHandling.Ignore };
-            var connectTo = JsonConvert.DeserializeObject<List<string>>(sr.ReadLine(), settings);
+            var connectTo = JsonConvert.DeserializeObject<List<string>>(Decrypt(buffer), settings);
 
             foreach(var s in connectTo)
             {
@@ -221,10 +213,8 @@ public void PrintByteArray(byte[] bytes)
             try
             {
                 await client.ConnectAsync(other.Split(':')[0], int.Parse(other.Split(':')[1]));
-                //var sw = new StreamWriter(new CryptoStream(client.GetStream(), e, CryptoStreamMode.Write));
 				var sw =  client.GetStream();
 
-				//var bytes = System.Text.Encoding.ASCII.GetBytes(data);
 				var b = Encrypt(data);
 				sw.Write(b, 0, b.Length);
                 sw.Flush();
@@ -253,7 +243,6 @@ public void PrintByteArray(byte[] bytes)
             await client.ConnectAsync("localhost", 5001); //Proxy
 
             var sw = new StreamWriter(client.GetStream());
-			//var sw = new StreamWriter(new CryptoStream(client.GetStream(), e, CryptoStreamMode.Write));
             sw.Write(data);
             sw.Flush();
             sw.Dispose();
