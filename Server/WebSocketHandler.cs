@@ -51,8 +51,6 @@ public class WebSocketHandler
                 var relayTCP = new TCPHandler();
                 relayTCP.Relay(raw);
                 await RelayModel.Instance.PropogateMessage(raw);
-
-                Console.WriteLine(raw);
             }
             catch
             {

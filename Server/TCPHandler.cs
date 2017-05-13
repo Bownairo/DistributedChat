@@ -60,7 +60,6 @@ public class TCPHandler
 
             foreach(var s in connectTo)
             {
-                Console.WriteLine(s);
                 var add = new TcpClient();
                 await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
 
@@ -88,7 +87,7 @@ public class TCPHandler
         }
     }
 
-    public async void ListenForOthers() //Listen for add requests and propogated messages
+    public async void ListenForOthers()
     {
         Console.WriteLine("Listening for others");
         var listener = new TcpListener(IPAddress.Any, int.Parse(myAddress.Split(':')[1]));
@@ -100,12 +99,12 @@ public class TCPHandler
             var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
             if(message.Add)
             {
-                Console.WriteLine("Added");
+                Console.WriteLine("Added server");
                 others.Add(message.Body);
             }
             else
             {
-                RelayModel.Instance.PropogateMessage(message.Body);
+                await RelayModel.Instance.PropogateMessage(message.Body);
             }
 
             sr.Dispose();
@@ -114,7 +113,6 @@ public class TCPHandler
 
     public async void Relay(string message)
     {
-        Console.WriteLine("Relaying message to " + others.Count + " others.");
         var package = new InternalComObject();
         package.Add = false;
         package.Body = message;
@@ -135,7 +133,7 @@ public class TCPHandler
             }
             catch
             {
-                Console.WriteLine("ugh");
+                Console.WriteLine("Can't connect to other servers");
             }
         }
     }

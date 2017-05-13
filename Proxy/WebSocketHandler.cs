@@ -48,9 +48,7 @@ public class WebSocketHandler
 
                 //probably encrypt here too
                 var server = ProxyModel.Instance.SelectServer();
-                Console.WriteLine(server);
                 await ProxyDirect(server);
-                Console.WriteLine(raw);
                 return;
             }
             catch

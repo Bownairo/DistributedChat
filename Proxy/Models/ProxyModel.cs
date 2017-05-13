@@ -61,14 +61,15 @@ public sealed class ProxyModel
         Console.WriteLine("User left server");
         var server = GetByLoc(loc);
         server.NumUsers--;
-        Console.WriteLine("Count: " + server.NumUsers);
     }
 
     public string SelectServer()
     {
         var destination = GetLeastUsers();
+
+        Console.WriteLine("Directing user to {0} ({1})", destination.Location, destination.NumUsers);
+
         destination.NumUsers++;
-        Console.WriteLine("Count: " + destination.NumUsers);
         return destination.Location;
     }
 
