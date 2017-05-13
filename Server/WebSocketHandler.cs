@@ -48,6 +48,8 @@ public class WebSocketHandler
 
                 var raw = System.Text.Encoding.ASCII.GetString(seg.Array.Take(result.Count).ToArray());
                 var data = JsonConvert.DeserializeObject<DataObject>(raw);
+                var relayTCP = new TCPHandler();
+                relayTCP.Relay(raw);
                 await RelayModel.Instance.PropogateMessage(raw);
 
                 Console.WriteLine(raw);

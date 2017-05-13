@@ -65,6 +65,7 @@ public class TCPHandler
                 await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
 
 				var temp = new StreamWriter(add.GetStream());
+				var tempRead = new StreamReader(add.GetStream());
 
 				var InternalPackage = new InternalComObject();
 				InternalPackage.Add = true;
@@ -98,14 +99,29 @@ public class TCPHandler
             var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
             if(message.Add)
             {
+                Console.WriteLine("Added");
                 others.Add(new StreamWriter(client.GetStream()));
             }
-            else
-            {
-                //propogate here
-            }
+
             sr.Dispose();
-            client.Dispose();
+
+            //var tempLine = await sr.ReadLineAsync();
+            //RelayModel.Instance.PropogateMessage(JsonConvert.DeserializeObject<InternalComObject>(tempLine).Body);
+        }
+    }
+
+    public async void Relay(string message)
+    {
+        Console.WriteLine("Relaying message to " + others.Count + " others.");
+        var package = new InternalComObject();
+        package.Add = false;
+        package.Body = message;
+
+        var data = JsonConvert.SerializeObject(package);
+
+        foreach(var other in others)
+        {
+            other.WriteLine(data);
         }
     }
 
@@ -117,8 +133,6 @@ public class TCPHandler
         package.New = false;
 
         var data = JsonConvert.SerializeObject(package);
-
-        Console.WriteLine(data);
 
         var client = new TcpClient();
         try
