@@ -43,17 +43,6 @@ public class TCPHandler
 	 	iv = new byte[] { 178, 102, 153, 177, 84, 41, 185, 203, 15, 20, 139, 186, 170, 114, 181, 13 };
     }
 
-	public void PrintByteArray(byte[] bytes)
-	{
-	    var sb = new StringBuilder("new byte[] { ");
-	    foreach (var b in bytes)
-	    {
-	        sb.Append(b + ", ");
-	    }
-	    sb.Append("}");
-	    Console.WriteLine(sb.ToString());
-	}
-
 	private byte[] Encrypt(string plainText)
 	{
 		if (plainText == null || plainText.Length <= 0)
@@ -179,7 +168,7 @@ public class TCPHandler
             var client = await listener.AcceptTcpClientAsync();
             //add a check to make sure it's not a closing doober or maybe not
 			var sr = client.GetStream();
-			//var sr = new StreamReader(client.GetStream());
+
 			sr.Read(buffer, 0, BufferSize);
 
 			var message = JsonConvert.DeserializeObject<InternalComObject>(Decrypt(buffer));

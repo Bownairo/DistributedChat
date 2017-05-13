@@ -29,7 +29,6 @@ public class TCPHandler
 	 	iv = new byte[] { 178, 102, 153, 177, 84, 41, 185, 203, 15, 20, 139, 186, 170, 114, 181, 13 };
 	}
 
-
 	private byte[] Encrypt(string plainText)
 	{
 		// Check arguments.

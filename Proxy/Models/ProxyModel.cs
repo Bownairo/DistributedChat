@@ -73,11 +73,6 @@ public sealed class ProxyModel
         return destination.Location;
     }
 
-    private void ProvisionServer(string loc)
-    {
-        //Communicate to all servers that they need to let someone new in
-    }
-
     private Server GetByLoc(string loc)
     {
         lock(serverLock)
