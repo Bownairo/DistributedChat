@@ -8,6 +8,7 @@ using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using System.Text;
 using Newtonsoft.Json;
 
 using WebApplication;
@@ -39,10 +40,24 @@ public class TCPHandler
         myWebsocket = websocket;
         myAddress = address;
         others = new List<string>();
-		security = Aes.Create();
+        security = Aes.Create();
+		security.Key = new byte[] { 136, 77, 169, 60, 5, 109, 61, 3, 23, 226, 114, 139, 240, 73, 52, 234, 65, 236, 89, 255, 25, 214, 135, 113, 131, 242, 226, 75, 35, 35, 227, 68, };
+		security.IV = new byte[] { 178, 102, 153, 177, 84, 41, 185, 203, 15, 20, 139, 186, 170, 114, 181, 13, };
+
 		e = security.CreateEncryptor(security.Key, security.IV);
 		d = security.CreateDecryptor(security.Key, security.IV);
     }
+
+public void PrintByteArray(byte[] bytes)
+{
+    var sb = new StringBuilder("new byte[] { ");
+    foreach (var b in bytes)
+    {
+        sb.Append(b + ", ");
+    }
+    sb.Append("}");
+    Console.WriteLine(sb.ToString());
+}
 
     public const int BufferSize = 4096;
     public async void StartCom()
@@ -73,20 +88,17 @@ public class TCPHandler
             {
                 var add = new TcpClient();
                 await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
-				Console.WriteLine(s);
-
 
 				//var temp = new StreamWriter(add.GetStream());
-				var temp = new StreamWriter(new CryptoStream(add.GetStream(), e, CryptoStreamMode.Write));
-
+				CryptoStream test;
+				var temp = new StreamWriter(test = new CryptoStream(add.GetStream(), e, CryptoStreamMode.Write));
 
 				var InternalPackage = new InternalComObject();
 				InternalPackage.Add = true;
 				InternalPackage.Body = myAddress;
 
-				// security stuff
-
 				temp.WriteLine(JsonConvert.SerializeObject(InternalPackage, settings));
+				test.FlushFinalBlock();
 				temp.Flush();
                 others.Add(s);
             }
@@ -114,9 +126,7 @@ public class TCPHandler
             //var sr = new StreamReader(client.GetStream());
 			var sr = new StreamReader(new CryptoStream(client.GetStream(), d, CryptoStreamMode.Read));
 
-			// security stuff
             var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
-			Console.WriteLine(message);
             if(message.Add)
             {
                 Console.WriteLine("Added server");
@@ -148,11 +158,6 @@ public class TCPHandler
                 await client.ConnectAsync(other.Split(':')[0], int.Parse(other.Split(':')[1]));
                 //var sw = new StreamWriter(client.GetStream());
 				var sw =  new StreamWriter(new CryptoStream(client.GetStream(), e, CryptoStreamMode.Write));
-
-				// security stuff
-				//var byteWord = System.Text.Encoding.ASCII.GetBytes(data);
-				//e.TransformBlock(byteWord, 0, byteWord.Length, buffer, 0);
-				//var e_data = System.Text.Encoding.ASCII.GetString(buffer);
 
                 sw.Write(data);
                 sw.Flush();
