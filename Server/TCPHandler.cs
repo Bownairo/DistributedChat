@@ -26,13 +26,13 @@ public class TCPHandler
 {
     static string myAddress;
     static string myWebsocket;
-    static List<StreamWriter> others;
+    static List<string> others;
 
     public void Init(string websocket, string address)
     {
         myWebsocket = websocket;
         myAddress = address;
-        others = new List<StreamWriter>();
+        others = new List<string>();
     }
 
     public async void StartCom()
@@ -69,10 +69,11 @@ public class TCPHandler
 
 				var InternalPackage = new InternalComObject();
 				InternalPackage.Add = true;
+				InternalPackage.Body = myAddress;
 
 				temp.WriteLine(JsonConvert.SerializeObject(InternalPackage, settings));
 				temp.Flush();
-                others.Add(temp);
+                others.Add(s);
             }
 
             sr.Dispose();
@@ -100,13 +101,14 @@ public class TCPHandler
             if(message.Add)
             {
                 Console.WriteLine("Added");
-                others.Add(new StreamWriter(client.GetStream()));
+                others.Add(message.Body);
+            }
+            else
+            {
+                RelayModel.Instance.PropogateMessage(message.Body);
             }
 
             sr.Dispose();
-
-            //var tempLine = await sr.ReadLineAsync();
-            //RelayModel.Instance.PropogateMessage(JsonConvert.DeserializeObject<InternalComObject>(tempLine).Body);
         }
     }
 
@@ -121,7 +123,20 @@ public class TCPHandler
 
         foreach(var other in others)
         {
-            other.WriteLine(data);
+            var client = new TcpClient();
+            try
+            {
+                await client.ConnectAsync(other.Split(':')[0], int.Parse(other.Split(':')[1]));
+                var sw = new StreamWriter(client.GetStream());
+                sw.Write(data);
+                sw.Flush();
+                sw.Dispose();
+                client.Dispose();
+            }
+            catch
+            {
+                Console.WriteLine("ugh");
+            }
         }
     }
 
