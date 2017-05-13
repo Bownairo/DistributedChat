@@ -62,6 +62,66 @@ public void PrintByteArray(byte[] bytes)
     Console.WriteLine(sb.ToString());
 }
 
+	private byte[] Encrypt(string plainText)
+    {
+        // Check arguments.
+        if (plainText == null || plainText.Length <= 0)
+            throw new ArgumentNullException("plainText");
+        byte[] encrypted;
+
+        using (Aes sec = Aes.Create())
+        {
+            sec.Key = key;
+            sec.IV = iv;
+			sec.Padding = PaddingMode.Zeros;
+
+            ICryptoTransform encryptor = sec.CreateEncryptor(sec.Key, sec.IV);
+
+            using (MemoryStream msEncrypt = new MemoryStream())
+            {
+                using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                {
+                    using (StreamWriter swEncrypt = new StreamWriter(csEncrypt))
+                    {
+                            swEncrypt.Write(plainText);
+                    }
+                    encrypted = msEncrypt.ToArray();
+                }
+            }
+        }
+        return encrypted;
+    }
+
+	private string Decrypt(byte[] cipherText)
+    {
+            // Check arguments.
+        if (cipherText == null || cipherText.Length <= 0)
+            throw new ArgumentNullException("cipherText");
+        string plaintext = null;
+
+        using (Aes sec = Aes.Create())
+        {
+            sec.Key = key;
+            sec.IV = iv;
+			sec.Padding = PaddingMode.Zeros;
+
+            ICryptoTransform decryptor = sec.CreateDecryptor(sec.Key, sec.IV);
+
+            using (MemoryStream msDecrypt = new MemoryStream(cipherText))
+            {
+                using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                {
+                    using (StreamReader srDecrypt = new StreamReader(csDecrypt))
+                    {
+                        plaintext = srDecrypt.ReadToEnd();
+                    }
+                }
+            }
+
+        }
+            return plaintext;
+    }
+
     public const int BufferSize = 4096;
     public async void StartCom()
     {
@@ -93,35 +153,14 @@ public void PrintByteArray(byte[] bytes)
                 var add = new TcpClient();
                 await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
 
-				//var temp = new StreamWriter(add.GetStream());
-				//var temp = new StreamWriter(test = new CryptoStream(add.GetStream(), e, CryptoStreamMode.Write));
 				var temp = add.GetStream();
 
 				var InternalPackage = new InternalComObject();
 				InternalPackage.Add = true;
 				InternalPackage.Body = myAddress;
 
-				using (Aes security = Aes.Create()) {
-					security.Key = key;
-					security.IV = iv;
-					var e = security.CreateEncryptor(security.Key, security.IV);
-					using (MemoryStream mem = new MemoryStream(BufferSize))
-					{
-						using (CryptoStream crypt = new CryptoStream(mem, e, CryptoStreamMode.Write))
-						{
-							using (StreamWriter writer = new StreamWriter(crypt))
-							{
-								//Write all data to the stream.
-								writer.Write(JsonConvert.SerializeObject(InternalPackage, settings));
-							}
-							encrypted = mem.ToArray();
-						}
-					}
-				}
-
-				temp.Write(encrypted, 0, encrypted.Length);
-				//temp.WriteLine(JsonConvert.SerializeObject(InternalPackage, settings));
-				//test.FlushFinalBlock();
+				var b = Encrypt(JsonConvert.SerializeObject(InternalPackage, settings));
+				temp.Write(b, 0, b.Length);
 				temp.Flush();
                 others.Add(s);
             }
@@ -152,30 +191,8 @@ public void PrintByteArray(byte[] bytes)
 			var sr = client.GetStream();
 			//var sr = new StreamReader(client.GetStream());
 			sr.Read(buffer, 0, BufferSize);
-			//var bytes = System.Text.Encoding.ASCII.GetBytes(sr.ReadLine());
-			//var cipher = sr.ReadLine();
 
-			using (Aes security = Aes.Create()) {
-				security.Key = key;
-				security.IV = iv;
-				var d = security.CreateDecryptor(security.Key, security.IV);
-				using (MemoryStream mem = new MemoryStream(buffer))
-				{
-					using (CryptoStream crypt = new CryptoStream(mem, d, CryptoStreamMode.Read))
-					{
-						using (StreamReader reader = new StreamReader(crypt))
-						{
-							// Read the decrypted bytes from the decrypting stream
-							// and place them in a string.
-							//reader.ReadBlock(plaintext, 0, BufferSize);
-							plaintext = reader.ReadToEnd();
-						}
-					}
-				}
-			}
-
-            //var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
-			var message = JsonConvert.DeserializeObject<InternalComObject>(plaintext);
+			var message = JsonConvert.DeserializeObject<InternalComObject>(Decrypt(buffer));
             if(message.Add)
             {
                 Console.WriteLine("Added server");
@@ -208,28 +225,10 @@ public void PrintByteArray(byte[] bytes)
                 await client.ConnectAsync(other.Split(':')[0], int.Parse(other.Split(':')[1]));
                 //var sw = new StreamWriter(new CryptoStream(client.GetStream(), e, CryptoStreamMode.Write));
 				var sw =  client.GetStream();
-				using (Aes security = Aes.Create()) {
-					security.Key = key;
-					security.IV = iv;
-					var e = security.CreateEncryptor(security.Key, security.IV);
-					using (MemoryStream mem = new MemoryStream())
-					{
-						using (CryptoStream crypt = new CryptoStream(mem, e, CryptoStreamMode.Write))
-						{
-							using (StreamWriter writer = new StreamWriter(crypt))
-							{
-								//Write all data to the stream.
-								writer.Write(data);
-							}
-							encrypted = mem.ToArray();
-						}
-					}
-				}
 
 				//var bytes = System.Text.Encoding.ASCII.GetBytes(data);
-                //sw.Write(bytes, 0, bytes.Length);
-				Array.Resize<byte>(ref encrypted, 4096);
-				sw.Write(encrypted, 0, BufferSize);
+				var b = Encrypt(data);
+				sw.Write(b, 0, b.Length);
                 sw.Flush();
                 sw.Dispose();
                 client.Dispose();
