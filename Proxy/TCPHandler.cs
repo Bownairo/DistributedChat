@@ -20,7 +20,7 @@ public class TCPHandler
 
     public async void StartComServer()
     {
-        var listener = new TcpListener(IPAddress.Any, 5001);
+        var listener = new TcpListener(IPAddress.Any, 6000);
         listener.Start();
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();

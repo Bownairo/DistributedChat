@@ -49,7 +49,7 @@ public class TCPHandler
         var client = new TcpClient();
         try
         {
-            await client.ConnectAsync("localhost", 5001); //Proxy
+            await client.ConnectAsync("localhost", 6000); //Proxy
 
             var sw = new StreamWriter(client.GetStream());
             var sr = new StreamReader(client.GetStream());
