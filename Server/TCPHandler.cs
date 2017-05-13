@@ -3,7 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Cryptography;
 using System.Security.Authentication;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,20 +30,28 @@ public class TCPHandler
     static string myAddress;
     static string myWebsocket;
     static List<string> others;
+	static Aes security;
+	static ICryptoTransform e;
+	static ICryptoTransform d;
 
     public void Init(string websocket, string address)
     {
         myWebsocket = websocket;
         myAddress = address;
         others = new List<string>();
+		security = Aes.Create();
+		e = security.CreateEncryptor(security.Key, security.IV);
+		d = security.CreateDecryptor(security.Key, security.IV);
     }
 
+    public const int BufferSize = 4096;
     public async void StartCom()
     {
         var package = new ComObject();
         package.Address = myAddress;
         package.Websocket = myWebsocket;
         package.New = true;
+		var buffer = new byte[BufferSize];
 
 		var data = JsonConvert.SerializeObject(package);
 
@@ -65,16 +73,18 @@ public class TCPHandler
             {
                 var add = new TcpClient();
                 await add.ConnectAsync(s.Split(':')[0], int.Parse(s.Split(':')[1])); //Other server
+				Console.WriteLine(s);
 
 
-				var secure = new SslStream(add.GetStream());
-				await secure.AuthenticateAsServerAsync(new X509Certificate());
-				var temp = new StreamWriter(secure);
-				var tempRead = new StreamReader(secure);
+				//var temp = new StreamWriter(add.GetStream());
+				var temp = new StreamWriter(new CryptoStream(add.GetStream(), e, CryptoStreamMode.Write));
+
 
 				var InternalPackage = new InternalComObject();
 				InternalPackage.Add = true;
 				InternalPackage.Body = myAddress;
+
+				// security stuff
 
 				temp.WriteLine(JsonConvert.SerializeObject(InternalPackage, settings));
 				temp.Flush();
@@ -101,10 +111,12 @@ public class TCPHandler
         for(;;) {
             var client = await listener.AcceptTcpClientAsync();
             //add a check to make sure it's not a closing doober or maybe not
-			var secure = new SslStream(client.GetStream());
-			await secure.AuthenticateAsClientAsync("localhost");
-            var sr = new StreamReader(secure);
+            //var sr = new StreamReader(client.GetStream());
+			var sr = new StreamReader(new CryptoStream(client.GetStream(), d, CryptoStreamMode.Read));
+
+			// security stuff
             var message = JsonConvert.DeserializeObject<InternalComObject>(sr.ReadLine());
+			Console.WriteLine(message);
             if(message.Add)
             {
                 Console.WriteLine("Added server");
@@ -125,6 +137,7 @@ public class TCPHandler
         package.Add = false;
         package.Body = message;
 
+		var buffer = new byte[BufferSize];
         var data = JsonConvert.SerializeObject(package);
 
         foreach(var other in others)
@@ -133,9 +146,14 @@ public class TCPHandler
             try
             {
                 await client.ConnectAsync(other.Split(':')[0], int.Parse(other.Split(':')[1]));
-				var secure = new SslStream(client.GetStream());
-				await secure.AuthenticateAsServerAsync(new X509Certificate());
-                var sw = new StreamWriter(secure);
+                //var sw = new StreamWriter(client.GetStream());
+				var sw =  new StreamWriter(new CryptoStream(client.GetStream(), e, CryptoStreamMode.Write));
+
+				// security stuff
+				//var byteWord = System.Text.Encoding.ASCII.GetBytes(data);
+				//e.TransformBlock(byteWord, 0, byteWord.Length, buffer, 0);
+				//var e_data = System.Text.Encoding.ASCII.GetString(buffer);
+
                 sw.Write(data);
                 sw.Flush();
                 sw.Dispose();
@@ -163,6 +181,7 @@ public class TCPHandler
             await client.ConnectAsync("localhost", 5001); //Proxy
 
             var sw = new StreamWriter(client.GetStream());
+			//var sw = new StreamWriter(new CryptoStream(client.GetStream(), e, CryptoStreamMode.Write));
             sw.Write(data);
             sw.Flush();
             sw.Dispose();
